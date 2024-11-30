@@ -9,10 +9,6 @@ TRUNCATE_STRING_TO = 5
 
 
 def posts_selected() -> QuerySet:
-    """Функция, ничего не принимает,
-    возвращает Queryset модели (таблицы) Post
-    с заджойненными к ней моделями (таблицами)
-    Category, Location, User."""
     return Post.objects.select_related(
         'category',
         'location',

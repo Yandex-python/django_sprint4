@@ -28,8 +28,7 @@ def posts_with_unpublished_category(mixer: Mixer, user: Model):
 @pytest.fixture
 def future_posts(mixer: Mixer, user: Model):
     date_later_now = (
-        datetime.now(tz=pytz.UTC) + timedelta(days=date)
-        for date in range(1, 11)
+        datetime.now(tz=pytz.UTC) + timedelta(days=date) for date in range(1, 11)
     )
     return mixer.cycle(N_PER_FIXTURE).blend(
         "blog.Post", author=user, pub_date=date_later_now
@@ -46,33 +45,6 @@ def unpublished_posts_with_published_locations(
         is_published=False,
         category=published_category,
         location=mixer.sequence(*published_locations),
-    )
-
-
-@pytest.fixture
-def post_with_another_category(
-    mixer: Mixer, user, published_location, published_category,
-        another_category
-):
-    assert published_category.id != another_category.id
-    return mixer.blend(
-        "blog.Post",
-        location=published_location,
-        category=another_category,
-        author=user,
-    )
-
-
-@pytest.fixture
-def post_of_another_author(
-    mixer: Mixer, user, another_user,  published_location, published_category
-):
-    assert user.id != another_user.id
-    return mixer.blend(
-        "blog.Post",
-        location=published_location,
-        category=published_category,
-        author=another_user,
     )
 
 
@@ -111,8 +83,9 @@ def post_comment_context_form_item(
         response.context,
         BaseForm,
         (
-            "Убедитесь, что в словарь контекста для страницы поста передаётся"
-            " ровно одна форма для создания комментария."
+            "Убедитесь, что в словарь контекста шаблона "
+            "страницы публикации передаётся ровно одна форма "
+            "для создания комментария."
         ),
     )
     return result
@@ -127,8 +100,8 @@ def create_post_context_form_item(
         response.context,
         BaseForm,
         (
-            "Убедитесь, что в словарь контекста для страницы создания поста"
-            " передаётся ровно одна форма."
+            "Убедитесь, что в словарь контекста шаблона "
+            "страницы создания публикации передаётся ровно одна форма."
         ),
     )
     return result

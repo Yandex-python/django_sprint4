@@ -6,14 +6,15 @@
   <h1 class="mb-5 text-center ">Страница пользователя {{ profile }}</h1>
   <small>
     <ul class="list-group list-group-horizontal justify-content-center mb-3">
-      <li class="list-group-item text-muted">Имя пользователя: {% if profile.get_full_name %}{{ profile.get_full_name }}{% else %}не указано{% endif %}</li>
+      <li class="list-group-item text-muted">Имя пользователя:
+        {% if profile.get_full_name %}{{ profile.get_full_name }}{% else %}не указано{% endif %}</li>
       <li class="list-group-item text-muted">Регистрация: {{ profile.date_joined }}</li>
       <li class="list-group-item text-muted">Роль: {% if profile.is_staff %}Админ{% else %}Пользователь{% endif %}</li>
     </ul>
     <ul class="list-group list-group-horizontal justify-content-center">
       {% if user.is_authenticated and request.user == profile %}
-      <a class="btn btn-sm text-muted" href="{% url 'users:edit_profile' %}">Редактировать профиль</a>
-      <a class="btn btn-sm text-muted" href="{% url 'users:password_change' %}">Изменить пароль</a>
+        <a class="btn btn-sm text-muted" href="{% url 'blog:edit_profile' %}">Редактировать профиль</a>
+        <a class="btn btn-sm text-muted" href="{% url 'password_change' %}">Изменить пароль</a>
       {% endif %}
     </ul>
   </small>

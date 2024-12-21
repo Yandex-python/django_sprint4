@@ -57,6 +57,10 @@ class Post(BaseModel, BaseTitle):
             "отложенные публикации."
         ),
     )
+      is_published = models.BooleanField(
+        default=False,
+        verbose_name="Опубликовано",
+    )
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,

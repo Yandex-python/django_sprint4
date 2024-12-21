@@ -69,6 +69,9 @@ class CategoryPostListView(MainPostListView):
         context['page_obj'] = paginate_queryset(self.request, self.get_queryset(), self.paginate_by)
         return context
 
+def filter_published_posts(queryset):
+    return queryset.filter(is_published=True, pub_date__lte=now(), category__is_published=True)
+
 class UserPostsListView(MainPostListView):
     template_name = "blog/profile.html"
     author = None
@@ -79,7 +82,7 @@ class UserPostsListView(MainPostListView):
         if self.author == self.request.user:
             queryset = post_all_query().filter(author=self.author)
         else:
-            queryset = super().get_queryset().filter(author=self.author)
+            queryset = filter_published_posts(super().get_queryset().filter(author=self.author))
         queryset = annotate_posts_with_comment_count(queryset)
         return sort_posts_by_pub_date(queryset)
 

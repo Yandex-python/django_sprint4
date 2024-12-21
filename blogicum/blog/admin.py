@@ -1,13 +1,10 @@
 from django.contrib import admin
 from django.utils.safestring import mark_safe
+admin.site.empty_value_display = "Не задано"
 
 from .models import Location, Category, Post, Comment
 
-admin.site.empty_value_display = "Не задано"
-
-
 class BlogAdmin(admin.ModelAdmin):
-    """Общий интерфейс админ-панели блог."""
 
     list_editable = ("is_published",)
 
@@ -21,7 +18,6 @@ class CommentAdmin(admin.TabularInline):
         "created_at",
     )
     extra = 0
-
 
 @admin.register(Post)
 class PostAdmin(BlogAdmin):

@@ -18,8 +18,11 @@ from core.mixins import CommentMixinView
 from .models import Post, User, Category, Comment
 from .forms import UserEditForm, PostEditForm, CommentEditForm
 
-def get_annotated_and_sorted_posts(queryset):
-    return queryset.annotate(comment_count=Count('comments')).order_by('-pub_date')
+def annotate_posts_with_comment_count(queryset):
+    return queryset.annotate(comment_count=Count('comments'))
+
+def sort_posts_by_pub_date(queryset):
+    return queryset.order_by('-pub_date')
 
 def paginate_queryset(request, queryset, items_per_page):
     paginator = Paginator(queryset, items_per_page)
@@ -39,7 +42,8 @@ class MainPostListView(ListView):
 
     def get_queryset(self):
         queryset = post_published_query()
-        return get_annotated_and_sorted_posts(queryset)
+        queryset = annotate_posts_with_comment_count(queryset)
+        return sort_posts_by_pub_date(queryset)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -56,7 +60,8 @@ class CategoryPostListView(MainPostListView):
             Category, slug=slug, is_published=True
         )
         queryset = super().get_queryset().filter(category=self.category)
-        return get_annotated_and_sorted_posts(queryset)
+        queryset = annotate_posts_with_comment_count(queryset)
+        return sort_posts_by_pub_date(queryset)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -75,7 +80,8 @@ class UserPostsListView(MainPostListView):
             queryset = post_all_query().filter(author=self.author)
         else:
             queryset = super().get_queryset().filter(author=self.author)
-        return get_annotated_and_sorted_posts(queryset)
+        queryset = annotate_posts_with_comment_count(queryset)
+        return sort_posts_by_pub_date(queryset)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

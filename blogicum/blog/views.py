@@ -39,6 +39,7 @@ def paginate_queryset(request, queryset, items_per_page):
 def filter_published_posts(queryset):
     return queryset.filter(is_published=True, pub_date__lte=now(), category__is_published=True)
 
+
 class MainPostListView(ListView):
     model = Post
     template_name = "blog/index.html"
@@ -53,6 +54,7 @@ class MainPostListView(ListView):
         context = super().get_context_data(**kwargs)
         context['page_obj'] = paginate_queryset(self.request, self.get_queryset(), self.paginate_by)
         return context
+
 
 class CategoryPostListView(MainPostListView):
     template_name = "blog/category.html"
@@ -72,6 +74,7 @@ class CategoryPostListView(MainPostListView):
         context["category"] = self.category
         context['page_obj'] = paginate_queryset(self.request, self.get_queryset(), self.paginate_by)
         return context
+
 
 class UserPostsListView(MainPostListView):
     template_name = "blog/profile.html"
@@ -93,15 +96,18 @@ class UserPostsListView(MainPostListView):
         context['page_obj'] = paginate_queryset(self.request, self.get_queryset(), self.paginate_by)
         return context
 
+
 class PostDetailView(DetailView):
     model = Post
     template_name = "blog/detail.html"
     post_data = None
+
     def get_queryset(self):
         self.post_data = get_object_or_404(Post, pk=self.kwargs["pk"])
         if self.post_data.author == self.request.user:
             return post_all_query().filter(pk=self.kwargs["pk"])
         return post_published_query().filter(pk=self.kwargs["pk"])
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         if self.check_post_data():
@@ -111,6 +117,7 @@ class PostDetailView(DetailView):
             "author"
         )
         return context
+
     def check_post_data(self):
         return all(
             (
@@ -120,54 +127,68 @@ class PostDetailView(DetailView):
             )
         )
 
+
 @login_required
 class UserProfileUpdateView(LoginRequiredMixin, UpdateView):
     model = User
     form_class = UserEditForm
     template_name = "blog/user.html"
+
     def get_object(self, queryset=None):
         return self.request.user
+
     def get_success_url(self):
         username = self.request.user
         return reverse("blog:profile", kwargs={"username": username})
+
 
 @login_required
 class PostCreateView(LoginRequiredMixin, CreateView):
     model = Post
     form_class = PostEditForm
     template_name = "blog/create.html"
+
     def form_valid(self, form):
         form.instance.author = self.request.user
         return super().form_valid(form)
+
     def get_success_url(self):
         return redirect("blog:profile", username=self.request.user.username)
+
 
 @login_required
 class PostUpdateView(LoginRequiredMixin, UpdateView):
     model = Post
     form_class = PostEditForm
     template_name = "blog/create.html"
+
     def dispatch(self, request, *args, **kwargs):
         if self.get_object().author != request.user:
             return redirect("blog:post_detail", pk=self.kwargs["pk"])
         return super().dispatch(request, *args, **kwargs)
+
     def get_success_url(self):
         return redirect("blog:post_detail", pk=self.kwargs["pk"])
+
 
 @login_required
 class PostDeleteView(LoginRequiredMixin, DeleteView):
     model = Post
     template_name = "blog/create.html"
+
     def dispatch(self, request, *args, **kwargs):
         if self.get_object().author != request.user:
             return redirect("blog:post_detail", pk=self.kwargs["pk"])
         return super().dispatch(request, *args, **kwargs)
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["form"] = PostEditForm(instance=self.object)
         return context
+
     def get_success_url(self):
         return redirect("blog:profile", username=self.request.user.username)
+
 
 @login_required
 class CommentCreateView(LoginRequiredMixin, CreateView):
@@ -175,17 +196,21 @@ class CommentCreateView(LoginRequiredMixin, CreateView):
     form_class = CommentEditForm
     template_name = "blog/comment.html"
     post_data = None
+
     def dispatch(self, request, *args, **kwargs):
         self.post_data = get_object_or_404(Post, pk=self.kwargs["pk"])
         return super().dispatch(request, *args, **kwargs)
+
     def form_valid(self, form):
         form.instance.author = self.request.user
         form.instance.post = self.post_data
         if self.post_data.author != self.request.user:
             self.send_author_email()
         return super().form_valid(form)
+
     def get_success_url(self):
         return redirect("blog:post_detail", pk=self.kwargs["pk"])
+
     def send_author_email(self):
         post_url = self.request.build_absolute_uri(self.get_success_url())
         recipient_email = self.post_data.author.email
@@ -203,6 +228,7 @@ class CommentCreateView(LoginRequiredMixin, CreateView):
             fail_silently=True,
         )
 
-@login_required      
+
+@login_required
 class CommentUpdateView(CommentMixinView, UpdateView):
     form_class = CommentEditForm

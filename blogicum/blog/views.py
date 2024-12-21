@@ -127,7 +127,8 @@ class UserProfileUpdateView(LoginRequiredMixin, UpdateView):
     def get_success_url(self):
         username = self.request.user
         return reverse("blog:profile", kwargs={"username": username})
-        
+
+@login_required
 class PostCreateView(LoginRequiredMixin, CreateView):
     model = Post
     form_class = PostEditForm
@@ -138,7 +139,8 @@ class PostCreateView(LoginRequiredMixin, CreateView):
     def get_success_url(self):
         username = self.request.user
         return reverse("blog:profile", kwargs={"username": username})
-        
+
+@login_required
 class PostUpdateView(LoginRequiredMixin, UpdateView):
     model = Post
     form_class = PostEditForm
@@ -150,7 +152,8 @@ class PostUpdateView(LoginRequiredMixin, UpdateView):
     def get_success_url(self):
         pk = self.kwargs["pk"]
         return reverse("blog:post_detail", kwargs={"pk": pk})
-        
+
+@login_required
 class PostDeleteView(LoginRequiredMixin, DeleteView):
     model = Post
     template_name = "blog/create.html"
@@ -165,7 +168,7 @@ class PostDeleteView(LoginRequiredMixin, DeleteView):
     def get_success_url(self):
         username = self.request.user
         return reverse_lazy("blog:profile", kwargs={"username": username})
-        
+
 class CommentCreateView(LoginRequiredMixin, CreateView):
     model = Comment
     form_class = CommentEditForm
@@ -200,5 +203,6 @@ class CommentCreateView(LoginRequiredMixin, CreateView):
             fail_silently=True,
         )
         
+@login_required      
 class CommentUpdateView(CommentMixinView, UpdateView):
     form_class = CommentEditForm

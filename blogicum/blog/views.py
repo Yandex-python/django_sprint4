@@ -110,12 +110,10 @@ class PostDetailView(DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        if self.check_post_data():
+        if self.check_post_data() or self.post_data.author == self.request.user:
             context["flag"] = True
             context["form"] = CommentEditForm()
-        context["comments"] = self.object.comments.all().select_related(
-            "author"
-        )
+        context["comments"] = self.object.comments.all().select_related("author")
         return context
 
     def check_post_data(self):

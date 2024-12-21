@@ -11,18 +11,16 @@ from django.views.generic import (
     DeleteView,
 )
 
-from core.utils import post_all_query, post_published_query, get_post_data
+from core.utils import post_all_query, post_published_query
 from core.mixins import CommentMixinView
 from .models import Post, User, Category, Comment
 from .forms import UserEditForm, PostEditForm, CommentEditForm
-
 
 class MainPostListView(ListView):
     model = Post
     template_name = "blog/index.html"
     queryset = post_published_query()
     paginate_by = 10
-
 
 class CategoryPostListView(MainPostListView):
     template_name = "blog/category.html"
@@ -40,7 +38,6 @@ class CategoryPostListView(MainPostListView):
         context["category"] = self.category
         return context
 
-
 class UserPostsListView(MainPostListView):
     template_name = "blog/profile.html"
     author = None
@@ -56,7 +53,6 @@ class UserPostsListView(MainPostListView):
         context = super().get_context_data(**kwargs)
         context["profile"] = self.author
         return context
-
 
 class PostDetailView(DetailView):
     model = Post
@@ -88,7 +84,6 @@ class PostDetailView(DetailView):
             )
         )
 
-
 class UserProfileUpdateView(LoginRequiredMixin, UpdateView):
     model = User
     form_class = UserEditForm
@@ -100,7 +95,6 @@ class UserProfileUpdateView(LoginRequiredMixin, UpdateView):
     def get_success_url(self):
         username = self.request.user
         return reverse("blog:profile", kwargs={"username": username})
-
 
 class PostCreateView(LoginRequiredMixin, CreateView):
     model = Post
@@ -115,7 +109,6 @@ class PostCreateView(LoginRequiredMixin, CreateView):
         username = self.request.user
         return reverse("blog:profile", kwargs={"username": username})
 
-
 class PostUpdateView(LoginRequiredMixin, UpdateView):
     model = Post
     form_class = PostEditForm
@@ -129,7 +122,6 @@ class PostUpdateView(LoginRequiredMixin, UpdateView):
     def get_success_url(self):
         pk = self.kwargs["pk"]
         return reverse("blog:post_detail", kwargs={"pk": pk})
-
 
 class PostDeleteView(LoginRequiredMixin, DeleteView):
     model = Post
@@ -149,7 +141,6 @@ class PostDeleteView(LoginRequiredMixin, DeleteView):
         username = self.request.user
         return reverse_lazy("blog:profile", kwargs={"username": username})
 
-
 class CommentCreateView(LoginRequiredMixin, CreateView):
     model = Comment
     form_class = CommentEditForm
@@ -157,7 +148,7 @@ class CommentCreateView(LoginRequiredMixin, CreateView):
     post_data = None
 
     def dispatch(self, request, *args, **kwargs):
-        self.post_data = get_post_data(self.kwargs)
+        self.post_data = get_object_or_404(Post, pk=self.kwargs["pk"])
         return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
@@ -187,3 +178,6 @@ class CommentCreateView(LoginRequiredMixin, CreateView):
             recipient_list=[recipient_email],
             fail_silently=True,
         )
+
+class CommentUpdateView(CommentMixinView, UpdateView):
+    form_class = CommentEditForm

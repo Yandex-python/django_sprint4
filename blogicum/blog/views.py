@@ -169,6 +169,7 @@ class PostDeleteView(LoginRequiredMixin, DeleteView):
         username = self.request.user
         return reverse_lazy("blog:profile", kwargs={"username": username})
 
+@login_required
 class CommentCreateView(LoginRequiredMixin, CreateView):
     model = Comment
     form_class = CommentEditForm

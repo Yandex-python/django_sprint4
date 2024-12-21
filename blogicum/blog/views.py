@@ -1,4 +1,5 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.decorators import login_required
 from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse, reverse_lazy
@@ -35,6 +36,9 @@ def paginate_queryset(request, queryset, items_per_page):
         paginated_queryset = paginator.page(paginator.num_pages)
     return paginated_queryset
 
+def filter_published_posts(queryset):
+    return queryset.filter(is_published=True, pub_date__lte=now(), category__is_published=True)
+
 class MainPostListView(ListView):
     model = Post
     template_name = "blog/index.html"
@@ -68,9 +72,6 @@ class CategoryPostListView(MainPostListView):
         context["category"] = self.category
         context['page_obj'] = paginate_queryset(self.request, self.get_queryset(), self.paginate_by)
         return context
-
-def filter_published_posts(queryset):
-    return queryset.filter(is_published=True, pub_date__lte=now(), category__is_published=True)
 
 class UserPostsListView(MainPostListView):
     template_name = "blog/profile.html"
@@ -139,8 +140,7 @@ class PostCreateView(LoginRequiredMixin, CreateView):
         form.instance.author = self.request.user
         return super().form_valid(form)
     def get_success_url(self):
-        username = self.request.user
-        return reverse("blog:profile", kwargs={"username": username})
+        return redirect("blog:profile", username=self.request.user.username)
 
 @login_required
 class PostUpdateView(LoginRequiredMixin, UpdateView):
@@ -152,8 +152,7 @@ class PostUpdateView(LoginRequiredMixin, UpdateView):
             return redirect("blog:post_detail", pk=self.kwargs["pk"])
         return super().dispatch(request, *args, **kwargs)
     def get_success_url(self):
-        pk = self.kwargs["pk"]
-        return reverse("blog:post_detail", kwargs={"pk": pk})
+        return redirect("blog:post_detail", pk=self.kwargs["pk"])
 
 @login_required
 class PostDeleteView(LoginRequiredMixin, DeleteView):
@@ -168,8 +167,7 @@ class PostDeleteView(LoginRequiredMixin, DeleteView):
         context["form"] = PostEditForm(instance=self.object)
         return context
     def get_success_url(self):
-        username = self.request.user
-        return reverse_lazy("blog:profile", kwargs={"username": username})
+        return redirect("blog:profile", username=self.request.user.username)
 
 @login_required
 class CommentCreateView(LoginRequiredMixin, CreateView):
@@ -187,8 +185,7 @@ class CommentCreateView(LoginRequiredMixin, CreateView):
             self.send_author_email()
         return super().form_valid(form)
     def get_success_url(self):
-        pk = self.kwargs["pk"]
-        return reverse("blog:post_detail", kwargs={"pk": pk})
+        return redirect("blog:post_detail", pk=self.kwargs["pk"])
     def send_author_email(self):
         post_url = self.request.build_absolute_uri(self.get_success_url())
         recipient_email = self.post_data.author.email
@@ -205,7 +202,7 @@ class CommentCreateView(LoginRequiredMixin, CreateView):
             recipient_list=[recipient_email],
             fail_silently=True,
         )
-        
+
 @login_required      
 class CommentUpdateView(CommentMixinView, UpdateView):
     form_class = CommentEditForm

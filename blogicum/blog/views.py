@@ -118,6 +118,8 @@ class PostDetailView(DetailView):
                 self.post_data.category.is_published,
             )
         )
+
+@login_required
 class UserProfileUpdateView(LoginRequiredMixin, UpdateView):
     model = User
     form_class = UserEditForm
